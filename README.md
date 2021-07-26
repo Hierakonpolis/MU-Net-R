@@ -7,8 +7,8 @@ This convolutional neural network is designed to perform skull-stripping and reg
 ## Training
 To use this script the data is assumed to be organized in a series of folders, one for each sample, sharing the same root folder. Each folder needs to contain a file for the MRI scan and one for each ROI you want segmented, as a binary mask in the same space as the MRI. Files need to have the same name in each folder. Do not forget to set the `--train` option for training. Defaults are as set in our paper, check the usage section below for how to change them if needed. The number of blocks on the encoder and decoder branches can simply be changed by changing the lenght of the `--kernels` option: 8 16 32 64 64 64 64 mean you will train a network with 7 blocks on each branch, 16 32 means there will only be two blocks.
 
-## Training scripts
-This folder simply contains scripts we used for the experiments in the paper. They are here for transparency purposes and they are not necessary in practice for using this release.
+## Training scripts and models
+These folders contain the scripts we used for the experiments in the paper and the files containing the parameters for the models we trained. They are here for transparency purposes and they are not necessary in practice for using this release. To use this method you will most likely have to retrain the network on your own data.
 
 ## Usage
 ```
