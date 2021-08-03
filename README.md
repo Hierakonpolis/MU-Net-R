@@ -2,7 +2,7 @@
 
 **[Automatic hippocampus segmentation in rat brain MRI after traumatic brain injury](let this be a link to the preprint)**
 
-This convolutional neural network is designed to perform skull-stripping and region segmentation on mouse brain MRI. This is a somewhat updated version of [MU-Net](https://github.com/Hierakonpolis/MU-Net). Here we streamlined the training of a new ensemble of networks, so if you are interested in training your own network use this repository insted of MU-Net. The conda environment we used is specified in the .yml file included in this repository.
+This convolutional neural network is designed to perform skull-stripping and region segmentation on mouse brain MRI. The conda environment we used is specified in the .yml file included in this repository.
 
 ## Training
 To use this script the data is assumed to be organized in a series of folders, one for each sample, sharing the same root folder. Each folder needs to contain a file for the MRI scan and one for each ROI you want segmented, as a binary mask in the same space as the MRI. Files need to have the same name in each folder. Do not forget to set the `--train` option for training. Defaults are as set in our paper, check the usage section below for how to change them if needed. The number of blocks on the encoder and decoder branches can simply be changed by changing the lenght of the `--kernels` option: 8 16 32 64 64 64 64 mean you will train a network with 7 blocks on each branch, 16 32 means there will only be two blocks.
