@@ -1,6 +1,6 @@
 # MU-Net-R
 
-**[Automatic hippocampus segmentation in rat brain MRI after traumatic brain injury](let this be a link to the preprint)**
+**[Automatic hippocampus segmentation in rat brain MRI after traumatic brain injury](https://www.biorxiv.org/content/10.1101/2021.08.03.454863v1)**
 
 This convolutional neural network is designed to perform skull-stripping and region segmentation on mouse brain MRI. The conda environment we used is specified in the .yml file included in this repository.
 
