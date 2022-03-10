@@ -108,7 +108,7 @@ if args.twoD:
     p['FilterSize'] = (3,3,1)
     p['PoolShape'] = (2,2,1)
 
-p['FiltersNum'] = args.kernels
+if hasmasks or haslabels: p['FiltersNum'] = args.kernels
 #%% Training script
 
 
@@ -166,7 +166,7 @@ if args.train:
 #%% Inference
 else:
     print('Inference')
-    pattern = re.compile(args.modelname+'_[0-9]+_dice.pth')
+    pattern = re.compile(args.modelname+'_[0-9]*.pth')
     
     
     models = []
@@ -175,7 +175,7 @@ else:
         if pattern.search(file.name): models.append(file.path)
     
     if len(models) == 0:
-        raise NameError('No models found for inference named '+args.modelname+' in '+args.savefolder)
+        raise NameError('No models found for inference named '+str(args.modelname)+' in '+str(args.savefolder))
     
     loader=torch.utils.data.DataLoader(Dataset, batch_size=1,num_workers=args.workers)
     for sfile in models:
