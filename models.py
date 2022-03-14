@@ -17,7 +17,7 @@ Wrapper for our models, to streamline training, loading, and similar operations
 """
 
 EPS=1e-10
-
+smooth = 1
 
 class GeneralizedDice():
     def __init__(self, classs=(0,1,2),sumdims=(2,3,4)):
@@ -36,6 +36,44 @@ class GeneralizedDice():
         divided = 1 - 2 * (torch.einsum("bc->b", intersection) + 1e-10) / (torch.einsum("bc->b", union) + 1e-10)
         loss = divided.mean()
         return loss
+
+def FocalTversky(y_true, y_pred, alpha=.7, gamma=.75):
+    # another potentially useful loss. was not in the original, but it should improve things
+    true_pos = torch.sum(y_true * y_pred)
+    false_neg = torch.sum(y_true * (1-y_pred))
+    false_pos = torch.sum((1-y_true)*y_pred)
+    tversky = (true_pos + smooth)/(true_pos + alpha*false_neg + (1-alpha)*false_pos + smooth)
+
+    return torch.pow(1 - tversky, gamma)
+
+class SurfaceLoss():
+    def __init__(self, classs=(0,1)):
+        # Self.idc is used to filter out some classes of the target mask. Use fancy indexing
+        self.idc = classs
+
+    def __call__(self, probs, ground_truth):
+
+        pc = probs[:, self.idc, ...]#.type(torch.cuda.FloatTensor)
+        dc = ground_truth[:, self.idc, ...]#.type(torch.cuda.FloatTensor)
+
+        multipled = torch.einsum("bcwh,bcwh->bcwh", pc, dc)
+
+        loss = multipled.mean()
+
+        return loss
+
+def one_hot2dist(seg):
+    # assert one_hot(torch.Tensor(seg), axis=0)
+    C = len(seg)
+
+    res = np.zeros_like(seg)
+    for c in range(C):
+        posmask = seg[c].astype(np.bool)
+
+        if posmask.any():
+            negmask = ~posmask
+            res[c] = distance(negmask) * negmask - (distance(posmask) - 1) * posmask
+    return res
 
 
 def Dice(labels,Ypred):
