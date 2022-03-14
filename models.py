@@ -190,8 +190,8 @@ class Segmentation():
               max_time,
               saveprogress,
               savebest,
-              LossMax=-0.8,#above this threshold, do not trigger early stopping
-              mindice=0.75): #below this mean dice threshold, do not trigger early stopping. Includes mask and background
+              LossMax=0.2,#above this threshold, do not trigger early stopping
+              mindice=0.8): #below this mean dice threshold, do not trigger early stopping. Includes mask and background
         testloss=0
         testdice=0
         while (self.opt['Epoch']<max_epochs and self.opt['TotalTime']<max_time and (self.opt['Epoch']-self.opt['BestLossEpoch'])<patience) or testloss>LossMax or testdice<mindice:

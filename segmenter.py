@@ -66,6 +66,15 @@ parser.add_argument('--maxepochs', default = np.inf, type = float,
 parser.add_argument('--maskweight', default = 1, type = float,
                     help = 'Weight parameter for the brain mask. If you get stuck training and only learning the brain mask, make this smaller. E.g. 0.01 or 0.001.')
 
+parser.add_argument('--startfold', default = 0, type = int,
+                    help = 'Fold to start from when training, default = 0. Use if resuming.')
+
+parser.add_argument('--max_loss', default = 0.2, type = float,
+                    help = 'Do not accept early stopping above this value for the loss. May reboot training. May require trial and error. Default: 0.2')
+
+parser.add_argument('--min_dice', default = 0.8, type = float,
+                    help = 'Do not accept early stopping when the AVERAGE Dice score is below this value. May reboot training. May require trial and error. Default: 0.8')
+
 args = parser.parse_args()
 
 #%% Dataset and transforms
@@ -142,27 +151,31 @@ if args.train:
         
     else:
         folds = args.folds
-        datasplitter=KFold(folds)
+        datasplitter=KFold(folds, shuffle = True, random_state = 93)
         split = datasplitter.split(range(len(Dataset)))
     
     # training loop over different folds
     
     for i, (train_idxs, test_idxs)  in enumerate(split):
-        
-        ModelSave = os.path.join(args.savefolder, args.modelname+'_'+str(i)+'.pth')
-        trainloader = torch.utils.data.DataLoader(Dataset, batch_size=1, sampler=torch.utils.data.SubsetRandomSampler(train_idxs),num_workers=args.workers)
-        testloader = torch.utils.data.DataLoader(Dataset, batch_size=1, sampler=torch.utils.data.SubsetRandomSampler(test_idxs),num_workers=args.workers)
-        
-        Model=M.Segmentation(n,savefile=None,parameters=p,device='cuda')
-        Model.setnames(args.mask,args.labels)
-        
-        Model.train(trainloader,
-                    testloader,
-                    max_epochs=args.maxepochs,
-                    patience=args.patience,
-                    max_time=60*args.maxtime,
-                    saveprogress=False,
-                    savebest=ModelSave)
+        if i < args.startfold: continue
+        converged = False
+        while not converged:
+            ModelSave = os.path.join(args.savefolder, args.modelname+'_'+str(i)+'.pth')
+            trainloader = torch.utils.data.DataLoader(Dataset, batch_size=1, sampler=torch.utils.data.SubsetRandomSampler(train_idxs),num_workers=args.workers)
+            testloader = torch.utils.data.DataLoader(Dataset, batch_size=1, sampler=torch.utils.data.SubsetRandomSampler(test_idxs),num_workers=args.workers)
+            
+            Model=M.Segmentation(n,savefile=None,parameters=p,device='cuda')
+            Model.setnames(args.mask,args.labels)
+            
+            converged = Model.train(trainloader,
+                                    testloader,
+                                    max_epochs=args.maxepochs,
+                                    patience=args.patience,
+                                    max_time=60*args.maxtime,
+                                    saveprogress=False,
+                                    savebest=ModelSave,
+                                    LossMax=args.max_loss,
+                                    mindice=args.min_dice)
 #%% Inference
 else:
     print('Inference')
