@@ -133,15 +133,23 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-def LargestComponent(Mask):
+def LargestComponent(Mask, components=1):
     Divs=SkLabel(Mask)
     counts=np.zeros(np.max(Divs))
+    taken = 0
+    inds = []
     for i in range(len(counts)):
         counts[i]=np.sum(Mask[Divs==(i+1)])
     if len(counts)==0: return Mask
-    ind=np.argmax(counts)+1
-    Mask[Divs!=ind]=0
-    return Mask
+    while taken < components:
+        inds.append(np.argmax(counts))
+        counts[inds[-1]] = -1
+        taken +=1
+    NewMask = np.zeros_like(Mask)
+    for i in inds:
+        NewMask[Divs == i+1] = 1
+    # Mask[Divs!=ind]=0
+    return NewMask
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)

@@ -236,7 +236,11 @@ else:
                 filename=nameroot+'_'+roiname+'.nii.gz'
                 R=templ[:,idx,...]
                 R=R.reshape(R.shape[-3:])
-                R=H.LargestComponent(R).astype(float)
+                if 'str' in roiname:
+                    comps = 2
+                else:
+                    comps = 1
+                R=H.LargestComponent(R, comps).astype(float)
                 R=H.FillHoles(R).astype(float)
                 H.MakeNii(R,prediction[ID][-1],filename)
         
