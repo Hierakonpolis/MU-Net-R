@@ -6,8 +6,7 @@ Created on Thu Jun  4 12:17:03 2020
 @author: cat
 """
 
-# from radam import RAdam
-from torch.optim import Adam as RAdam
+from radam import RAdam
 import numpy as np
 import torch, tqdm, time, os
 
