@@ -77,6 +77,13 @@ parser.add_argument('--min_dice', default = 0.8, type = float,
 
 args = parser.parse_args()
 
+def fixp(p):
+    if 'LabelsOnly' not in p:
+        p['LabelsOnly'] = False
+        
+    if 'MaskOnly' not in p:
+        p['MaskOnly'] = False
+
 #%% Dataset and transforms
 
 normalizator = H.Normalizer()
@@ -181,7 +188,6 @@ else:
     print('Inference')
     pattern = re.compile(args.modelname+'_[0-9]*.pth')
     
-    
     models = []
     inferences = []
     for file in os.scandir(args.savefolder):
@@ -193,6 +199,8 @@ else:
     loader=torch.utils.data.DataLoader(Dataset, batch_size=1,num_workers=args.workers)
     for sfile in models:
         p=torch.load(sfile)['opt']['PAR']
+        fixp(p)
+        
         if p['MaskOnly']:
             n = N.SkullNet
         elif p['LabelsOnly']:
@@ -204,6 +212,7 @@ else:
         inferences.append(Model.inferece(loader))
     
     p = Model.opt['PAR']
+    fixp(p)
     maskn, labeln = Model.getnames()
     
     if maskn is not None: maskn = maskn.split('.nii')[0]
@@ -231,8 +240,10 @@ else:
         if not p['MaskOnly']:
             templ [np.where(templ== np.amax(templ,axis=1))] = 1
             templ[templ!=1]=0
-            
-            for idx, roiname in enumerate(labeln+['Background']):
+            if 'Background' not in labeln:
+                labeln += ['Background']
+            for idx, roiname in enumerate(labeln):
+                print(templ.shape,labeln)
                 filename=nameroot+'_'+roiname+'.nii.gz'
                 R=templ[:,idx,...]
                 R=R.reshape(R.shape[-3:])
