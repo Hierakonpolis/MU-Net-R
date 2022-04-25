@@ -5,7 +5,7 @@ Created on Tue May  4 15:56:54 2021
 
 @author: cat
 """
-import argparse, pathlib, os, torch, re
+import argparse, pathlib, os, torch, re, shutil
 from torchvision.transforms import Compose
 import helper as H
 import models as M
@@ -74,6 +74,9 @@ parser.add_argument('--max_loss', default = 0.2, type = float,
 
 parser.add_argument('--min_dice', default = 0.8, type = float,
                     help = 'Do not accept early stopping when the AVERAGE Dice score is below this value. May reboot training. May require trial and error. Default: 0.8')
+
+parser.add_argument('--outpath', type=pathlib.Path, default=None,
+                    help = 'Specify a different output directory. Otherwise, outputs will be placed in the same directory as inputs. Replicates the same folder structure.')
 
 args = parser.parse_args()
 
@@ -222,6 +225,10 @@ else:
         temp=0
         templ=0
         nameroot = ID.split('.nii')[0]
+        if args.outpath is not None:
+            nameroot = str(nameroot).replace(str(args.dataroot),str(args.outpath))
+            if not os.path.isdir(nameroot):
+                os.makedirs(os.path.dirname(nameroot))
         
         for prediction in inferences:
             if not p['LabelsOnly']: temp+=prediction[ID][0]/len(inferences)
@@ -243,7 +250,6 @@ else:
             if 'Background' not in labeln:
                 labeln += ['Background']
             for idx, roiname in enumerate(labeln):
-                print(templ.shape,labeln)
                 filename=nameroot+'_'+roiname+'.nii.gz'
                 R=templ[:,idx,...]
                 R=R.reshape(R.shape[-3:])
