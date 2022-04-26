@@ -969,7 +969,7 @@ class Normalizer():
         mean=np.nanmean(sample['MRI'])
         std=np.nanstd(sample['MRI'])
     
-        sample['MRI']=(sample['MRI']-mean)/(np.sqrt(std))
+        sample['MRI']=(sample['MRI']-mean)/(std)
         return sample
     
 class RotSlice():
