@@ -61,20 +61,6 @@ class SurfaceLoss():
 
         return loss
 
-def one_hot2dist(seg):
-    # assert one_hot(torch.Tensor(seg), axis=0)
-    C = len(seg)
-
-    res = np.zeros_like(seg)
-    for c in range(C):
-        posmask = seg[c].astype(np.bool)
-
-        if posmask.any():
-            negmask = ~posmask
-            res[c] = distance(negmask) * negmask - (distance(posmask) - 1) * posmask
-    return res
-
-
 def Dice(labels,Ypred):
     
     labels [np.where(labels == np.amax(labels,axis=1))] = 1

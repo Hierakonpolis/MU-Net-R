@@ -128,6 +128,8 @@ if args.twoD:
     p['PoolShape'] = (2,2,1)
 
 if hasmasks or haslabels: p['FiltersNum'] = args.kernels
+if haslabels:
+    p['Categories'] = len(args.labels)
 #%% Training script
 
 
