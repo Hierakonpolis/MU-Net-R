@@ -129,7 +129,7 @@ if args.twoD:
 
 if hasmasks or haslabels: p['FiltersNum'] = args.kernels
 if haslabels:
-    p['Categories'] = len(args.labels)
+    p['Categories'] = len(args.labels) + 1
 #%% Training script
 
 
