@@ -186,18 +186,15 @@ class Segmentation():
                 loss = self.loss(out,true)
                 losses.append(float(loss.detach().cpu()))
                 if not self.opt['PAR']['MaskOnly']: 
-                    DL=Dice(sample['Labels'].detach().cpu().numpy(),out[1].detach().cpu().numpy())
+                    dl = Dice(sample['Labels'].detach().cpu().numpy(), out[1].detach().cpu().numpy())
                 else:
-                    DL=[0]
+                    dl = []
                 if not self.opt['PAR']['LabelsOnly']: 
-                    DM=MonoDice(sample['Mask'].detach().cpu().numpy(),out[0].detach().cpu().numpy())
+                    dm = MonoDice(sample['Mask'].detach().cpu().numpy(), out[0].detach().cpu().numpy())
                 else:
-                    DM = [0]
-                dices.append(list(DM) + list(DL))
-        
-        
-        
-        
+                    dm = []
+                dices.append(list(dm) + list(dl))
+
         self.opt['TestLoss'].append((self.opt['Epoch'],np.mean(losses)))
         self.opt['TestDices'].append((self.opt['Epoch'],dices))
         dices=np.array(dices).mean(axis=0)
@@ -215,10 +212,18 @@ class Segmentation():
               saveprogress,
               savebest,
               LossMax=0.2,#above this threshold, do not trigger early stopping
-              mindice=0.8): #below this mean dice threshold, do not trigger early stopping. Includes mask and background
+              mindice=0.8,
+              ): #below this mean dice threshold, do not trigger early stopping. Includes mask and background
         testloss=0
         testdice=0
-        while (self.opt['Epoch']<max_epochs and self.opt['TotalTime']<max_time and (self.opt['Epoch']-self.opt['BestLossEpoch'])<patience) or testloss>LossMax or testdice<mindice:
+        while \
+                (
+                        self.opt['Epoch']<max_epochs and
+                        self.opt['TotalTime']<max_time and
+                        (self.opt['Epoch']-self.opt['BestLossEpoch'])<patience
+                ) or \
+                        testloss>LossMax or \
+                        testdice<mindice:
             start=time.time()
             print('Epoch',self.opt['Epoch'],flush=True)
             trainloss = self.train_one_epoch(train_dataloader)
@@ -240,7 +245,7 @@ class Segmentation():
                 self.save(savedice)
             
             if saveprogress: self.save(saveprogress)
-            if self.opt['Epoch']>max_epochs and (testloss>LossMax or testdice<mindice):
+            if self.opt['Epoch']>max_epochs and (testloss>LossMax):  # or testdice<mindice):
                 return False
         print('Best dice',self.opt['BestDice'])
         return True

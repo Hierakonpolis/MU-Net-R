@@ -172,6 +172,7 @@ if args.train:
         if i < args.startfold: continue
         converged = False
         while not converged:
+            print(f'Training on fold {i}')
             ModelSave = os.path.join(args.savefolder, args.modelname+'_'+str(i)+'.pth')
             trainloader = torch.utils.data.DataLoader(Dataset, batch_size=1, sampler=torch.utils.data.SubsetRandomSampler(train_idxs),num_workers=args.workers)
             testloader = torch.utils.data.DataLoader(Dataset, batch_size=1, sampler=torch.utils.data.SubsetRandomSampler(test_idxs),num_workers=args.workers)
@@ -187,7 +188,13 @@ if args.train:
                                     saveprogress=False,
                                     savebest=ModelSave,
                                     LossMax=args.max_loss,
-                                    mindice=args.min_dice)
+                                    mindice=args.min_dice,
+                                    )
+            if converged:
+                print("Training converged")
+            else:
+                print(f"It seems training did not converge during the given number of epochs, by not reaching the "
+                      f"minimum Dice, or staying above maximum loss. Restarting training on fold {i}")
 #%% Inference
 else:
     print('Inference')
